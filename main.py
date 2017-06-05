@@ -10,10 +10,11 @@ import os
 flags = tf.app.flags
 flags.DEFINE_integer("epoch", 100, "Number of epochs [100]")
 flags.DEFINE_integer("training_step", 10000, "Number of training steps [10000]")
-flags.DEFINE_integer("batch_size", 100, "The size of batch sizes [100]")
+flags.DEFINE_integer("batch_size", 1, "The size of batch sizes [100]")
 flags.DEFINE_float("learning_rate", 3e-4, "The learning rate of optimizing algorithm [0.0003]")
 flags.DEFINE_integer("lam", .01, "Lambda regularizer [0.01]")
 flags.DEFINE_string("checkpoint_dir", "checkpoint", "Checkpoint directory [checkpoint_dir]")
+flags.DEFINE_string("tensorboard_dir", "tensorboard", "Tensorboard directory [tensorboard_dir]")
 FLAGS = flags.FLAGS
 
 pp = pprint.PrettyPrinter()
