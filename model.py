@@ -22,27 +22,24 @@ class VAE(object):
     
   def model(self):
 
-    #self.n_hidden = 500
-    #self.n_z = 20
-    #self.batchsize = 1
-
-    self.images = tf.placeholder(tf.float32, [None, 784])
-    #self.images = tf.placeholder(tf.float32, [None, None, None, self.channels])
-    #reshapedImages = self.images
-    #if(reshapedImages.shape[1] > reshapedImages.shape[2]):
-    #  reshapedImages = tf.image.crop_to_bounding_box(reshapedImages, (reshapedImages.shape[1]-reshapedImages.shape[2])/2, 0, reshapedImages.shape[2], reshapedImages.shape[2])
-    #if(reshapedImages.shape[2] > reshapedImages.shape[1]):
-    #  reshapedImages = tf.image.crop_to_bounding_box(reshapedImages, 0, (reshapedImages.shape[2]-reshapedImages.shape[1])/2, reshapedImages.shape[1], reshapedImages.shape[1])
-    #scaledImages = tf.image.resize_images(reshapedImages, [self.image_size, self.image_size])
-    image_matrix = tf.reshape(self.images,[-1, self.image_size, self.image_size, self.channels])
+    #self.images = tf.placeholder(tf.float32, [None, 784])
+    self.images = tf.placeholder(tf.float32, [None, None, None, self.channels])
+    reshapedImages = self.images
+    if(reshapedImages.shape[1] > reshapedImages.shape[2]):
+      reshapedImages = tf.image.crop_to_bounding_box(reshapedImages, (reshapedImages.shape[1]-reshapedImages.shape[2])/2, 0, reshapedImages.shape[2], reshapedImages.shape[2])
+    if(reshapedImages.shape[2] > reshapedImages.shape[1]):
+      reshapedImages = tf.image.crop_to_bounding_box(reshapedImages, 0, (reshapedImages.shape[2]-reshapedImages.shape[1])/2, reshapedImages.shape[1], reshapedImages.shape[1])
+    image_matrix = tf.image.resize_images(reshapedImages, [self.image_size, self.image_size])
+    images_flat = tf.reshape(image_matrix, [self.batch_size, self.image_size*self.image_size])
+    #image_matrix = tf.reshape(self.images,[-1, self.image_size, self.image_size, self.channels])
 
     z_mean, z_stddev = self.recognition(image_matrix)
     samples = tf.random_normal([self.batch_size,self.n_z],0,1,dtype=tf.float32)
     guessed_z = z_mean + (z_stddev * samples)
     generated_images = self.generation(guessed_z)
-    generated_flat = tf.reshape(generated_images, [self.batch_size, 28*28])
+    generated_flat = tf.reshape(generated_images, [self.batch_size, self.image_size*self.image_size])
 
-    generation_loss = -tf.reduce_sum(self.images * tf.log(1e-8 + generated_flat) + (1-self.images) * tf.log(1e-8 + 1 - generated_flat),1)
+    generation_loss = -tf.reduce_sum(images_flat * tf.log(1e-8 + generated_flat) + (1-images_flat) * tf.log(1e-8 + 1 - generated_flat),1)
     latent_loss = 0.5 * tf.reduce_sum(tf.square(z_mean) + tf.square(z_stddev) - tf.log(tf.square(z_stddev)) - 1,1)
     cost = tf.reduce_mean(generation_loss + latent_loss)
     self.optimizer = tf.train.AdamOptimizer(0.001).minimize(cost)
@@ -94,14 +91,27 @@ class VAE(object):
 
     print("Start training...")
 
+    max = 0
     while True:
-      batch = self.input_data.train.next_batch(self.batch_size)
-      counter += 1
-      _, summary = self.sess.run([self.optimizer, self.sum], feed_dict={self.images: batch[0]})
+      batch = self.input_data.next_batch(self.batch_size)
+      #MNIST
+      #batch = self.input_data.train.next_batch(self.batch_size)
+      #batch = np.reshape(batch[0], (1,28,28,1))
+      for i in batch:
+        for w in i:
+          for h in w:
+            if h[0] > max:
+              print(h[0])
+              max = h[0]
+      #print(batch)
+      print("Recieved Data: ", counter)
+      _, summary = self.sess.run([self.optimizer, self.sum], feed_dict={self.images: batch})
+      print("Updated Model: ", counter)
       board_writer.add_summary(summary, counter)
-
       if counter % 5000 == 0:
         self.save(self.checkpoint_dir, counter)
+
+      counter += 1
 
   def save(self, checkpoint_dir, step):
     model_name = "vae.model"

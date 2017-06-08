@@ -1,5 +1,5 @@
 from model import VAE
-
+from feeder import webcamFeeder, videoFeeder
 import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
@@ -23,11 +23,12 @@ def main(_):
   if not os.path.exists(FLAGS.tensorboard_dir):
     os.makedirs(FLAGS.tensorboard_dir)
 
-  mnist = input_data.read_data_sets('MNIST')
-  #REPLACE WITH YOUR OWN CLASS. FUNCTION next_batch
+  #feed = input_data.read_data_sets('MNIST')
+  feed = webcamFeeder()
+  #feed = videoFeeder("Disco_Hot_Dog_Pyramid.mp4")
 
   with tf.Session() as sess:
-    vae = VAE(sess, mnist, FLAGS)
+    vae = VAE(sess, feed, FLAGS)
     vae.train()
 
 if __name__ == '__main__':
