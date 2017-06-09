@@ -3,11 +3,12 @@ import numpy as np
 
 class webcamFeeder(object):
 
-	def __init__(self):
+	def __init__(self, color):
 		self.vc = cv2.VideoCapture(0)
 		self.width = int(self.vc.get(cv2.CAP_PROP_FRAME_WIDTH))
 		self.height = int(self.vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
 		self.channels = 3
+		self.color = color
 
 	def next_batch(self, batchSize):
 		if not self.vc.isOpened():
@@ -20,7 +21,9 @@ class webcamFeeder(object):
 				print("Webcam Read Error")
 				return
 			feed[i, :, :, :] = frame
-		feed = np.mean(feed, axis=3, keepdims=True) / 255.0
+		if not self.color:
+			feed = np.mean(feed, axis=3, keepdims=True)
+		feed = feed / 255.0
 		return feed
 
 	def __del__(self):
@@ -28,11 +31,12 @@ class webcamFeeder(object):
 
 class videoFeeder(object):
 
-	def __init__(self, videoFile):
+	def __init__(self, videoFile, color):
 		self.vc = cv2.VideoCapture(videoFile)
 		self.width = int(self.vc.get(cv2.CAP_PROP_FRAME_WIDTH))
 		self.height = int(self.vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
 		self.channels = 3
+		self.color = color
 
 	def next_batch(self, batchSize):
 		if not self.vc.isOpened():
@@ -45,7 +49,9 @@ class videoFeeder(object):
 				print("Video Read Error")
 				return
 			feed[i, :, :, :] = frame
-		feed = np.mean(feed, axis=3, keepdims=True) / 255.0
+		if not self.color:
+			feed = np.mean(feed, axis=3, keepdims=True)
+		feed = feed / 255.0
 		return feed
 
 	def __del__(self):
