@@ -1,0 +1,5 @@
+checkpoint
+tensorboard
+*.pyc
+*.mp4
+*~

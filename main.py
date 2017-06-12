@@ -15,7 +15,7 @@ flags.DEFINE_string("tensorboard_dir", "tensorboard", "Directory where tensorboa
 flags.DEFINE_string("saveModel", True, "Whether to save model progress or not")
 flags.DEFINE_string("loadModel", True, "Whether to load the previous model or not")
 flags.DEFINE_string("saveData", True, "Whether to save model data or not")
-flags.DEFINE_string("saveRate", 2500, "Step interval at which to save the model")
+flags.DEFINE_string("saveRate", 100, "Step interval at which to save the model")
 FLAGS = flags.FLAGS
 
 def main(_):
@@ -25,8 +25,8 @@ def main(_):
   if not os.path.exists(FLAGS.tensorboard_dir):
     os.makedirs(FLAGS.tensorboard_dir)
 
-  feed = webcamFeeder(color=True)
-  #feed = videoFeeder("Disco_Hot_Dog_Pyramid.mp4", color=True)
+  #feed = webcamFeeder(color=True)
+  feed = videoFeeder("video.mp4", color=True)
 
   with tf.Session() as sess:
     vae = VAE(sess, feed, FLAGS)

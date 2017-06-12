@@ -86,9 +86,8 @@ class VAE(object):
 
 
   def train(self):
-    board_writer = tf.summary.FileWriter(self.tensorboard_dir)
+    board_writer = tf.summary.FileWriter(self.tensorboard_dir, self.sess.graph)
     tf.global_variables_initializer().run()
-    counter = 0
 
     if self.loadModel:
       if self.load(self.checkpoint_dir):
@@ -97,15 +96,18 @@ class VAE(object):
         print(" [!] Load failed...")
 
     print("Start training...")
-
-    max = 0
+    
+    counter = 0
     while True:
       batch = self.input_data.next_batch(self.batch_size)
-      _, summary = self.sess.run([self.optimizer, self.sum], feed_dict={self.images: batch})
-      if self.saveData:
-        board_writer.add_summary(summary, counter)
-      if self.saveModel and counter % self.saveRate == 0:
-        self.save(self.checkpoint_dir, counter)
+      self.sess.run(self.optimizer, feed_dict={self.images: batch})
+      if counter % self.saveRate == 0:
+        print('batch {}'.format(counter))
+        if self.saveData:
+          summary = self.sess.run(self.sum, feed_dict={self.images: batch})
+          board_writer.add_summary(summary, counter)
+        if self.saveModel:
+          self.save(self.checkpoint_dir, counter)
       counter += 1
 
   def save(self, checkpoint_dir, step):
