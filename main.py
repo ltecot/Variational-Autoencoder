@@ -1,3 +1,5 @@
+# Little change to test git stuff
+
 from model import VAE
 from feeder import webcamFeeder, videoFeeder
 import numpy as np
